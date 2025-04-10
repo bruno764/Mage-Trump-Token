@@ -1,0 +1,10 @@
+{
+  "projectId": "prj_06x1O68Y9Ho53VkBm9z1c80n02fY",
+  "orgId": "bruno764s-projects",
+  "settings": {
+    "framework": "vite",
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "rootDirectory": "."
+  }
+}

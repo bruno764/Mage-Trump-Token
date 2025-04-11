@@ -4,6 +4,7 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 
 export default defineConfig({
   root: '.', // garante que o Vite use a raiz do projeto
+  base: './', // adicionado para garantir que os caminhos relativos funcionem corretamente
   plugins: [
     react(),
     {

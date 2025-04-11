@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@solana/web3.js": "^1.98.0",
-    "firebase": "^10.14.1",
+    "@solana/web3.js": "^1.43.0",
+    "firebase": "^11.6.0",
     "react": "^18.2.0",
     "react-app-rewired": "^2.2.1",
     "react-dom": "^18.2.0",

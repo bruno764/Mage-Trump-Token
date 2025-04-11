@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import trumpImg from '../assets/trump.png';
-import { WalletContext } from '../wallet/WalletProvider';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useNavigate } from 'react-router-dom';
 import bs58 from 'bs58';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Airdrop = () => {
-  const { walletAddress, connectWallet, isConnected } = useContext(WalletContext);
+  const { publicKey, connect, connected } = useWallet();
   const [refLink, setRefLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
   const launchDate = new Date('2025-04-27T00:00:00Z');
 
   const isValidWallet = (address) => {
@@ -28,7 +28,8 @@ const Airdrop = () => {
   ];
 
   useEffect(() => {
-    if (walletAddress) {
+    if (publicKey) {
+      const walletAddress = publicKey.toBase58();
       const baseUrl = window.location.origin;
 
       if (!isValidWallet(walletAddress)) {
@@ -52,18 +53,6 @@ const Airdrop = () => {
             createdAt: new Date().toISOString(),
             claimed: false
           });
-
-          setConfirmed(true);
-          setTimeout(() => setConfirmed(false), 5000);
-
-          // ✅ Enviar para o Discord
-          await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              content: `🎉 Nova wallet registrada via airdrop:\n\`${walletAddress}\``
-            })
-          });
         }
       };
 
@@ -71,7 +60,14 @@ const Airdrop = () => {
       localStorage.setItem('walletConnected', 'true');
       saveUserIfValid();
     }
-  }, [walletAddress]);
+  }, [publicKey]);
+
+  useEffect(() => {
+    const shouldReconnect = localStorage.getItem('walletConnected') === 'true';
+    if (shouldReconnect && !connected) {
+      connect().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -92,6 +88,12 @@ const Airdrop = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleConnect = async () => {
+    if (!connected) {
+      await connect();
+    }
+  };
 
   const copyLink = () => {
     navigator.clipboard.writeText(refLink);
@@ -115,22 +117,16 @@ const Airdrop = () => {
           Connect your wallet to receive 0.5 SOL, locked until launch on April 27
         </p>
         <button
-          onClick={connectWallet}
+          onClick={handleConnect}
           className={`${
-            isConnected ? 'bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
+            connected ? 'bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
           } text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 mb-4`}
         >
-          {isConnected ? `Connected: ${walletAddress}` : 'Connect Wallet'}
+          {connected ? 'Wallet Connected' : 'Connect Wallet'}
         </button>
 
-        {isConnected && (
+        {connected && (
           <>
-            {confirmed && (
-              <div className="bg-green-600 text-white px-4 py-2 rounded-lg mb-4 shadow-md">
-                ✅ Wallet registered successfully!
-              </div>
-            )}
-
             <p className="text-sm text-white/70 mb-1">Your referral link:</p>
             <div
               className="bg-white text-black px-4 py-2 rounded-xl mt-1 break-all cursor-pointer hover:bg-gray-100 transition"
@@ -153,7 +149,7 @@ const Airdrop = () => {
           </>
         )}
 
-        {!isConnected && (
+        {!connected && (
           <div className="mt-4 text-red-300">
             ❌ Connect your wallet to see your airdrop link and eligibility.
           </div>

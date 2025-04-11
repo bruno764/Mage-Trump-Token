@@ -1,50 +1,49 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { WalletContext } from '../wallet/WalletProvider';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthProvider';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { walletAddress, isConnected, connectWallet, disconnectWallet } = useContext(WalletContext);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      await login(email, password);
+  const handleAccess = () => {
+    // Troque isso por validação real, se desejar
+    if (walletAddress === '4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD') {
       navigate('/admin');
-    } catch (err) {
-      setError('Login failed. Check your credentials.');
+    } else {
+      setError('❌ Acesso negado: apenas a carteira do administrador pode acessar.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <form onSubmit={handleLogin} className="bg-gray-800 p-8 rounded shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 p-2 rounded font-semibold">
-          Login
-        </button>
-      </form>
+    <div className="min-h-screen bg-[#0a369d] text-white flex flex-col items-center justify-center p-6">
+      <h1 className="text-3xl font-bold mb-4">Admin Login</h1>
+
+      <button
+        onClick={isConnected ? disconnectWallet : connectWallet}
+        className={`${
+          isConnected ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+        } text-white font-semibold py-2 px-6 rounded-lg mb-4 transition duration-300`}
+      >
+        {isConnected ? 'Disconnect Wallet' : 'Connect Wallet'}
+      </button>
+
+      {isConnected && (
+        <div className="text-sm mb-4">
+          ✅ Connected: <span className="font-mono text-yellow-300">{walletAddress}</span>
+        </div>
+      )}
+
+      <button
+        onClick={handleAccess}
+        disabled={!isConnected}
+        className="bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold py-2 px-6 rounded-lg transition"
+      >
+        Access Admin Panel
+      </button>
+
+      {error && <p className="text-red-400 mt-4 text-sm">{error}</p>}
     </div>
   );
 }

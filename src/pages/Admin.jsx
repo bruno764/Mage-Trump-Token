@@ -8,7 +8,8 @@ export default function Admin() {
   const [users, setUsers] = useState([]);
   const [totalSol, setTotalSol] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const { walletAddress, isConnected, disconnectWallet } = useContext(WalletContext);
+  const { publicKey, connected, disconnect } = useWallet();
+const walletAddress = publicKey?.toBase58();
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -10,6 +10,7 @@ const Airdrop = () => {
   const [refLink, setRefLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
   const launchDate = new Date('2025-04-27T00:00:00Z');
 
   const isValidWallet = (address) => {
@@ -51,6 +52,8 @@ const Airdrop = () => {
             createdAt: new Date().toISOString(),
             claimed: false
           });
+          setConfirmed(true);
+          setTimeout(() => setConfirmed(false), 5000);
         }
       };
 
@@ -112,6 +115,12 @@ const Airdrop = () => {
 
         {isConnected && (
           <>
+            {confirmed && (
+              <div className="bg-green-600 text-white px-4 py-2 rounded-lg mb-4 shadow-md">
+                ✅ Wallet registered successfully!
+              </div>
+            )}
+
             <p className="text-sm text-white/70 mb-1">Your referral link:</p>
             <div
               className="bg-white text-black px-4 py-2 rounded-xl mt-1 break-all cursor-pointer hover:bg-gray-100 transition"

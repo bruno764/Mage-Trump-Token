@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import trumpImg from '../assets/trump.png';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useNavigate } from 'react-router-dom';
+import bs58 from 'bs58';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const Airdrop = () => {
   const { publicKey, connect, connected } = useWallet();
@@ -10,11 +13,52 @@ const Airdrop = () => {
   const [countdown, setCountdown] = useState('');
   const launchDate = new Date('2025-04-27T00:00:00Z');
 
+  const isValidWallet = (address) => {
+    try {
+      const decoded = bs58.decode(address);
+      return decoded.length === 32;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const blacklist = [
+    '2vY6rLpZ7U6u1iX3Kb9TBLk8FWpjmR3SzDeYN2vgqvnU',
+    '4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD'
+  ];
+
   useEffect(() => {
     if (publicKey) {
+      const walletAddress = publicKey.toBase58();
       const baseUrl = window.location.origin;
-      setRefLink(`${baseUrl}/?ref=${publicKey.toBase58()}`);
+
+      if (!isValidWallet(walletAddress)) {
+        alert('❌ Invalid wallet address.');
+        return;
+      }
+
+      if (blacklist.includes(walletAddress)) {
+        alert('🚫 This wallet is not allowed to claim.');
+        return;
+      }
+
+      const saveUserIfValid = async () => {
+        const docRef = doc(db, 'users', walletAddress);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          await setDoc(docRef, {
+            wallet: walletAddress,
+            referral: new URLSearchParams(window.location.search).get('ref') || null,
+            createdAt: new Date().toISOString(),
+            claimed: false
+          });
+        }
+      };
+
+      setRefLink(`${baseUrl}/?ref=${walletAddress}`);
       localStorage.setItem('walletConnected', 'true');
+      saveUserIfValid();
     }
   }, [publicKey]);
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import trumpImg from '../assets/trump.png';
-import { WalletContext } from '../wallet/PhantomProvider';
+import { WalletContext } from '../wallet/WalletProvider';
 import bs58 from 'bs58';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -52,8 +52,18 @@ const Airdrop = () => {
             createdAt: new Date().toISOString(),
             claimed: false
           });
+
           setConfirmed(true);
           setTimeout(() => setConfirmed(false), 5000);
+
+          // ✅ Enviar para o Discord
+          await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `🎉 Nova wallet registrada via airdrop:\n\`${walletAddress}\``
+            })
+          });
         }
       };
 

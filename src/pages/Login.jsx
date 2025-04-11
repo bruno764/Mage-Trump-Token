@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { WalletContext } from '../wallet/WalletProvider';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {

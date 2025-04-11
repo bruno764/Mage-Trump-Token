@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthProvider'; // Garantindo que AuthPr
 import Home from './pages/Home';
 import Admin from './pages/Admin'; // Adicionando o Admin
 import Login from './pages/Login';
+import Airdrop from './pages/Airdrop';
 import Referrals from './pages/Referrals';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/admin" element={<Admin />} /> {/* Rota para Admin */}
             <Route path="/login" element={<Login />} />
+            <Route path="/airdrop" element={<Airdrop />} />
             <Route path="/referrals" element={<Referrals />} />
           </Routes>
         </AuthProvider>

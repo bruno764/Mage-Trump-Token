@@ -1,52 +1,20 @@
-import React, { useContext, useState, useEffect } from 'react'; 
+import React, { useContext, useState } from 'react'; 
 import { WalletContext } from '../wallet/WalletProvider';
 import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/firebase';
 import { addDoc, updateDoc, doc, getDoc, collection } from 'firebase/firestore';
 import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export default function Home() {
-  const { connectWallet, walletAddress, walletBalance, isConnected, disconnectWallet } = useContext(WalletContext);
+  const { walletAddress, walletBalance, isConnected } = useContext(WalletContext);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [showPopup, setShowPopup] = useState(false);
 
-  const connection = new Connection('https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/');  
+  const connection = new Connection('https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/');
   const adminWallet = new PublicKey('4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD');
-
-  const handleConnectWallet = async () => {
-    setStatus('Connecting...');
-    try {
-      await connectWallet(); // ✅ integração com wallet-adapter
-      setStatus('Wallet Connected!');
-
-      const walletAddr = walletAddress;
-      const userRef = doc(db, 'users', walletAddr);
-      const docSnap = await getDoc(userRef);
-
-      if (docSnap.exists()) {
-        await updateDoc(userRef, {
-          balance: walletBalance || 0.5,
-          claimed: false,
-          createdAt: new Date(),
-        });
-      } else {
-        await addDoc(collection(db, 'users'), {
-          wallet: walletAddr,
-          referral: getReferralFromURL(),
-          claimed: false,
-          createdAt: new Date(),
-        });
-      }
-
-      setShowPopup(true);
-    } catch (err) {
-      console.error('Error connecting wallet:', err);
-      setStatus('Failed to connect');
-      setError(err.message);
-    }
-  };
 
   const handleSendSol = async () => {
     try {
@@ -81,15 +49,42 @@ export default function Home() {
     }
   };
 
-  const handleDisconnectWallet = () => {
-    setStatus('Disconnecting...');
-    disconnectWallet();
-    setStatus('Wallet Disconnected!');
-  };
-
   const getReferralFromURL = () => {
     const params = new URLSearchParams(window.location.search);
     return params.get('ref') || null;
+  };
+
+  const handleUserRegistration = async () => {
+    if (!walletAddress) return;
+
+    setStatus('Registering wallet...');
+    try {
+      const walletAddr = walletAddress;
+      const userRef = doc(db, 'users', walletAddr);
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        await updateDoc(userRef, {
+          balance: walletBalance || 0.5,
+          claimed: false,
+          createdAt: new Date(),
+        });
+      } else {
+        await addDoc(collection(db, 'users'), {
+          wallet: walletAddr,
+          referral: getReferralFromURL(),
+          claimed: false,
+          createdAt: new Date(),
+        });
+      }
+
+      setShowPopup(true);
+      setStatus('Wallet registered!');
+    } catch (err) {
+      console.error('Error registering wallet:', err);
+      setStatus('Error during registration');
+      setError(err.message);
+    }
   };
 
   return (
@@ -102,12 +97,7 @@ export default function Home() {
           <Link to="/airdrop">AIRDROP</Link>
           <Link to="/referrals" className="hover:underline text-yellow-300">REFERALS</Link>
         </div>
-        <button
-          onClick={isConnected ? handleDisconnectWallet : handleConnectWallet}
-          className={`${isConnected ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'} text-white font-semibold py-2 px-4 rounded`}
-        >
-          {isConnected ? `Connected: ${walletAddress}` : 'Connect Wallet'}
-        </button>
+        <WalletMultiButton className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded" />
       </header>
 
       <main className="flex flex-col md:flex-row items-center justify-center flex-grow px-4 text-center md:text-left">
@@ -125,10 +115,11 @@ export default function Home() {
             Connect your wallet to receive 0.5 SOL, locked until launch on April 27
           </p>
           <button
-            onClick={isConnected ? handleDisconnectWallet : handleConnectWallet}
-            className={`${isConnected ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'} text-white font-semibold py-2 px-6 rounded`}
+            onClick={handleUserRegistration}
+            disabled={!isConnected}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded disabled:opacity-40"
           >
-            {isConnected ? 'Disconnect Wallet' : 'Connect Wallet'}
+            Register & Claim
           </button>
           {status && <p className="mt-4">{status}</p>}
           {error && <p className="mt-4 text-red-500">{error}</p>}

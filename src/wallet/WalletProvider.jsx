@@ -9,8 +9,7 @@ import {
 } from '@solana/wallet-adapter-react-ui';
 import {
   PhantomWalletAdapter,
-  SolflareWalletAdapter,
-  BackpackWalletAdapter
+  SolflareWalletAdapter
 } from '@solana/wallet-adapter-wallets';
 import { PublicKey, Connection } from '@solana/web3.js';
 
@@ -21,8 +20,7 @@ const endpoint = 'https://api.mainnet-beta.solana.com';
 export const WalletConnectionProvider = ({ children }) => {
   const wallets = useMemo(() => [
     new PhantomWalletAdapter(),
-    new SolflareWalletAdapter(),
-    new BackpackWalletAdapter()
+    new SolflareWalletAdapter()
   ], []);
 
   return (

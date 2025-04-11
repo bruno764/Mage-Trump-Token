@@ -18,9 +18,13 @@ export default defineConfig({
     global: 'globalThis'
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist',  // Garante que a pasta 'dist' seja gerada
     rollupOptions: {
       input: './index.html' // força o uso do index.html raiz
     }
+  },
+  server: {
+    // Ajuste o Vercel para rodar o local corretamente
+    port: 5173,  // ou qualquer outra porta que você esteja utilizando localmente
   }
 });

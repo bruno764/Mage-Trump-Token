@@ -1,31 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
+import { WalletContext } from '../wallet/WalletProvider';
+import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
   const [users, setUsers] = useState([]);
   const [totalSol, setTotalSol] = useState(0);
   const [transactions, setTransactions] = useState([]);
+  const { walletAddress, isConnected, disconnectWallet } = useContext(WalletContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadData = async () => {
       const userSnap = await getDocs(collection(db, 'users'));
       const usersData = userSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setUsers(usersData);
-      setTotalSol(usersData.reduce((total, user) => total + parseFloat(user.balance || 0), 0)); // Calcula o total de SOL recebido
+      setTotalSol(usersData.reduce((total, user) => total + parseFloat(user.balance || 0), 0));
 
       const txSnap = await getDocs(collection(db, 'transactions'));
       const txData = txSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setTransactions(txData.sort((a, b) => b.timestamp?.seconds - a.timestamp?.seconds));
     };
 
-    loadData();
-  }, []); // Carrega os dados quando o componente é montado
+    if (walletAddress === '4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD') {
+      loadData();
+    } else {
+      navigate('/login');
+    }
+  }, [walletAddress, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <div>
+          <span className="text-sm mr-4">Connected: {walletAddress}</span>
+          <button
+            onClick={disconnectWallet}
+            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+          >
+            Disconnect
+          </button>
+        </div>
       </div>
 
       {/* Dashboard */}

@@ -8,7 +8,6 @@ export const PhantomProvider = ({ children }) => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Função para conectar a carteira
   const connectWallet = async () => {
     const provider = window?.solana;
 
@@ -21,25 +20,30 @@ export const PhantomProvider = ({ children }) => {
     const publicKey = resp.publicKey.toString();
 
     setWalletAddress(publicKey);
-    setIsConnected(true); // Atualizando o estado de conexão
-
-    // Armazenar a carteira no localStorage
+    setIsConnected(true);
     localStorage.setItem('walletAddress', publicKey);
+
+    // ✅ Notificar no Discord
+    await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: `📡 Wallet conectada na página principal:\n\`${publicKey}\``
+      })
+    });
   };
 
-  // Função para desconectar a carteira
   const disconnectWallet = () => {
     setWalletAddress(null);
-    setIsConnected(false); // Atualiza o estado quando a carteira for desconectada
+    setIsConnected(false);
     localStorage.removeItem('walletAddress');
   };
 
-  // Verificar se a carteira já está conectada ao carregar a página
   useEffect(() => {
     const storedWallet = localStorage.getItem('walletAddress');
     if (storedWallet) {
       setWalletAddress(storedWallet);
-      setIsConnected(true); // Atualiza o estado com a carteira armazenada
+      setIsConnected(true);
     }
   }, []);
 

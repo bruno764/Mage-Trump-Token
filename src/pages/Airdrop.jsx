@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import trumpImg from '../assets/trump.png';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { useNavigate } from 'react-router-dom';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import bs58 from 'bs58';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -89,12 +89,6 @@ const Airdrop = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleConnect = async () => {
-    if (!connected) {
-      await connect();
-    }
-  };
-
   const copyLink = () => {
     navigator.clipboard.writeText(refLink);
     setCopied(true);
@@ -116,14 +110,11 @@ const Airdrop = () => {
         <p className="mb-4 text-white/90">
           Connect your wallet to receive 0.5 SOL, locked until launch on April 27
         </p>
-        <button
-          onClick={handleConnect}
-          className={`${
-            connected ? 'bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
-          } text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 mb-4`}
-        >
-          {connected ? 'Wallet Connected' : 'Connect Wallet'}
-        </button>
+
+        {/* ✅ Botão modal universal */}
+        <div className="mb-4">
+          <WalletMultiButton className="!bg-blue-600 !hover:bg-blue-700 !text-white !font-bold !py-3 !px-6 !rounded-2xl !shadow-lg !transition" />
+        </div>
 
         {connected && (
           <>

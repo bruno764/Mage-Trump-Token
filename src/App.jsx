@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { WalletConnectionProvider } from './wallet/WalletProvider';
+import WalletProvider from './wallet/WalletProvider';
 import { AuthProvider } from './contexts/AuthProvider';
 
 import Home from './pages/Home';
@@ -12,7 +12,7 @@ import About from './pages/About';
 
 export default function App() {
   return (
-    <WalletConnectionProvider>
+    <WalletProvider>
       <BrowserRouter>
         <AuthProvider>
           <Routes>
@@ -25,6 +25,6 @@ export default function App() {
           </Routes>
         </AuthProvider>
       </BrowserRouter>
-    </WalletConnectionProvider>
+    </WalletProvider>
   );
 }

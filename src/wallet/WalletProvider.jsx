@@ -29,3 +29,6 @@ export const WalletProvider = ({ children }) => {
     </ConnectionProvider>
   );
 };
+
+// ✅ Exportação default para uso no App.jsx
+export default WalletProvider;

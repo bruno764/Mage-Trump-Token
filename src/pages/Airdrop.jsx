@@ -4,9 +4,11 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useNavigate } from 'react-router-dom';
 
 const Airdrop = () => {
-  const { publicKey, connect, disconnect, connected } = useWallet();
+  const { publicKey, connect, connected } = useWallet();
   const [refLink, setRefLink] = useState('');
-  const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+  const [countdown, setCountdown] = useState('');
+  const launchDate = new Date('2025-04-27T00:00:00Z');
 
   useEffect(() => {
     if (publicKey) {
@@ -23,36 +25,89 @@ const Airdrop = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const distance = launchDate.getTime() - now.getTime();
+
+      if (distance < 0) {
+        setCountdown('Claim is now available!');
+        clearInterval(interval);
+      } else {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((distance / (1000 * 60)) % 60);
+        const seconds = Math.floor((distance / 1000) % 60);
+        setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleConnect = async () => {
     if (!connected) {
       await connect();
     }
   };
 
+  const copyLink = () => {
+    navigator.clipboard.writeText(refLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
+
   return (
-    <div className="min-h-screen bg-[#0a369d] text-white flex flex-col md:flex-row items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0a369d] text-white flex flex-col md:flex-row items-center justify-center p-6">
       <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
-        <img src={trumpImg} alt="Trump" className="w-80 md:w-[450px]" />
+        <img src={trumpImg} alt="Trump" className="w-72 md:w-[450px]" />
       </div>
-      <div className="w-full md:w-1/2 text-center md:text-left">
+      <div className="w-full md:w-1/2 text-center md:text-left max-w-lg">
         <h1 className="text-4xl md:text-6xl font-bold mb-4">
-          Claim your <span className="text-yellow-400">Mage Trump Token</span>
+          MAGE TRUMP TOKEN
         </h1>
-        <p className="text-lg md:text-xl mb-6">
-          Connect your Phantom wallet and get your exclusive airdrop. Invite others and earn more!
+        <p className="text-lg md:text-xl mb-2">
+          Claim <span className="text-yellow-400 font-bold">$MAGE</span> Airdrop
+        </p>
+        <p className="mb-4 text-white/90">
+          Connect your wallet to receive 0.5 SOL, locked until launch on April 27
         </p>
         <button
           onClick={handleConnect}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 mb-4"
+          className={`${
+            connected ? 'bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
+          } text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 mb-4`}
         >
           {connected ? 'Wallet Connected' : 'Connect Wallet'}
         </button>
-        {refLink && (
-          <div className="mt-4">
-            <p className="text-sm text-white/80">Your referral link:</p>
-            <div className="bg-white text-black px-4 py-2 rounded-xl mt-2 break-all">
+
+        {connected && (
+          <>
+            <p className="text-sm text-white/70 mb-1">Your referral link:</p>
+            <div
+              className="bg-white text-black px-4 py-2 rounded-xl mt-1 break-all cursor-pointer hover:bg-gray-100 transition"
+              onClick={copyLink}
+            >
               {refLink}
             </div>
+            {copied && <p className="text-green-300 mt-1 text-sm">Link copied!</p>}
+
+            <div className="mt-6">
+              <p className="text-white/80">⏳ Claim available in:</p>
+              <p className="text-xl font-bold text-yellow-300 mt-1">{countdown}</p>
+              <button
+                disabled
+                className="mt-4 bg-gray-600 cursor-not-allowed text-white font-semibold px-5 py-2 rounded-lg opacity-70"
+              >
+                Claim (available April 27)
+              </button>
+            </div>
+          </>
+        )}
+
+        {!connected && (
+          <div className="mt-4 text-red-300">
+            ❌ Connect your wallet to see your airdrop link and eligibility.
           </div>
         )}
       </div>

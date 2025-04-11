@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { WalletContext } from '../wallet/PhantomProvider';
+import { WalletContext } from '../wallet/WalletProvider';
 import { getDocs, query, collection, where } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 

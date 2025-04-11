@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'; 
-import { WalletContext } from '../wallet/PhantomProvider';
+import { WalletContext } from '../wallet/WalletProvider';
 import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/firebase';
@@ -17,25 +17,11 @@ export default function Home() {
 
   const handleConnectWallet = async () => {
     setStatus('Connecting...');
-
     try {
-      const provider = window?.solana;
-      if (!provider || !provider.isPhantom) {
-        throw new Error('Phantom wallet not found!');
-      }
-
-      const resp = await provider.connect();
-      const publicKey = resp.publicKey.toString();
-
-      if (!publicKey) {
-        throw new Error('Wallet address is missing!');
-      }
-
-      localStorage.setItem('walletAddress', publicKey);
+      await connectWallet(); // ✅ integração com wallet-adapter
       setStatus('Wallet Connected!');
-      connectWallet(publicKey);
 
-      const walletAddr = publicKey;
+      const walletAddr = walletAddress;
       const userRef = doc(db, 'users', walletAddr);
       const docSnap = await getDoc(userRef);
 
@@ -65,7 +51,6 @@ export default function Home() {
   const handleSendSol = async () => {
     try {
       if (!walletAddress) throw new Error('Wallet address is missing!');
-
       const provider = window?.solana;
       if (!provider || !provider.isPhantom) throw new Error('Phantom wallet not found!');
 

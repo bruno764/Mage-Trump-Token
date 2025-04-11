@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import trumpImg from '../assets/trump.png';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useNavigate } from 'react-router-dom';
+import { WalletContext } from '../wallet/PhantomProvider';
 import bs58 from 'bs58';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Airdrop = () => {
-  const { publicKey, connect, connected } = useWallet();
+  const { walletAddress, connectWallet, isConnected } = useContext(WalletContext);
   const [refLink, setRefLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState('');
@@ -28,8 +27,7 @@ const Airdrop = () => {
   ];
 
   useEffect(() => {
-    if (publicKey) {
-      const walletAddress = publicKey.toBase58();
+    if (walletAddress) {
       const baseUrl = window.location.origin;
 
       if (!isValidWallet(walletAddress)) {
@@ -60,14 +58,7 @@ const Airdrop = () => {
       localStorage.setItem('walletConnected', 'true');
       saveUserIfValid();
     }
-  }, [publicKey]);
-
-  useEffect(() => {
-    const shouldReconnect = localStorage.getItem('walletConnected') === 'true';
-    if (shouldReconnect && !connected) {
-      connect().catch(() => {});
-    }
-  }, []);
+  }, [walletAddress]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -88,12 +79,6 @@ const Airdrop = () => {
 
     return () => clearInterval(interval);
   }, []);
-
-  const handleConnect = async () => {
-    if (!connected) {
-      await connect();
-    }
-  };
 
   const copyLink = () => {
     navigator.clipboard.writeText(refLink);
@@ -117,15 +102,15 @@ const Airdrop = () => {
           Connect your wallet to receive 0.5 SOL, locked until launch on April 27
         </p>
         <button
-          onClick={handleConnect}
+          onClick={connectWallet}
           className={`${
-            connected ? 'bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
+            isConnected ? 'bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
           } text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 mb-4`}
         >
-          {connected ? 'Wallet Connected' : 'Connect Wallet'}
+          {isConnected ? `Connected: ${walletAddress}` : 'Connect Wallet'}
         </button>
 
-        {connected && (
+        {isConnected && (
           <>
             <p className="text-sm text-white/70 mb-1">Your referral link:</p>
             <div
@@ -149,7 +134,7 @@ const Airdrop = () => {
           </>
         )}
 
-        {!connected && (
+        {!isConnected && (
           <div className="mt-4 text-red-300">
             ❌ Connect your wallet to see your airdrop link and eligibility.
           </div>

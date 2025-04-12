@@ -19,11 +19,11 @@ export default function Home() {
 
   const handleSendSol = async () => {
     try {
-      const { blockhash } = await connection.getLatestBlockhash();
+      const latestBlockhash = await connection.getLatestBlockhash();
 
       const transaction = new Transaction({
-        recentBlockhash: blockhash,
         feePayer: publicKey,
+        recentBlockhash: latestBlockhash.blockhash,
       }).add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -33,7 +33,8 @@ export default function Home() {
       );
 
       const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, 'confirmed');
+      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
+
       console.log('✅ SOL enviado com sucesso:', signature);
       setShowPopup(false);
       alert('0.5 SOL enviado com sucesso!');

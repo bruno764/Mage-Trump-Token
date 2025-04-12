@@ -50,20 +50,6 @@ export default function Home() {
     return params.get('ref') || null;
   };
 
-  const sendToDiscord = async (wallet) => {
-    try {
-      await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: `📥 Nova carteira registrada: \`${wallet}\``,
-        }),
-      });
-    } catch (err) {
-      console.error('Erro ao enviar webhook:', err);
-    }
-  };
-
   const handleUserRegistration = async () => {
     if (!walletAddress) return;
 
@@ -84,7 +70,6 @@ export default function Home() {
           claimed: false,
           createdAt: new Date(),
         });
-        await sendToDiscord(walletAddress); // Envia para o Discord se for nova
       }
 
       setShowPopup(true);
@@ -97,21 +82,22 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a369d] text-white flex flex-col items-center justify-between">
-      <header className="w-full flex justify-between items-center px-10 py-6">
-        <div className="flex gap-10 text-white font-semibold text-sm">
+    <div className="min-h-screen bg-[#0a369d] text-white flex flex-col justify-between overflow-x-hidden">
+      <header className="w-full flex justify-between items-center px-4 md:px-10 py-6 flex-wrap">
+        <div className="flex flex-wrap gap-4 md:gap-10 text-white font-semibold text-sm justify-center md:justify-start w-full md:w-auto">
           <Link to="/" className="hover:underline">HOME</Link>
           <Link to="/about" className="hover:underline">ABOUT</Link>
+          <Link to="/roadmap" className="hover:underline">ROADMAP</Link>
           <Link to="/airdrop">AIRDROP</Link>
           <Link to="/referrals" className="hover:underline text-yellow-300">REFERALS</Link>
         </div>
-        <div className="flex items-center">
+        <div className="mt-4 md:mt-0 md:ml-auto">
           <WalletMultiButton className="!bg-blue-600 !hover:bg-blue-700 !text-white !font-semibold !py-2 !px-4 !rounded transition" />
         </div>
       </header>
 
-      <main className="flex flex-col md:flex-row items-center justify-center flex-grow px-4 text-center md:text-left">
-        <div className="w-full md:w-1/2 flex justify-center">
+      <main className="flex flex-col-reverse md:flex-row items-center justify-center flex-grow px-4 text-center md:text-left">
+        <div className="w-full md:w-1/2 flex justify-center mt-6 md:mt-0">
           <img src={trumpImage} alt="Trump Mage" className="w-64 md:w-[320px] lg:w-[380px]" />
         </div>
         <div className="w-full md:w-1/2 flex flex-col justify-center items-center md:items-start mt-6 md:mt-0">

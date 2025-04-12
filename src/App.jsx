@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import WalletProvider from './wallet/WalletProvider';
 import { AuthProvider } from './contexts/AuthProvider';
 
+import NotFound from './pages/NotFound';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
@@ -16,6 +17,7 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+          <Route path="*" element={<NotFound />} />
             <Route path="/" element={<Home />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />

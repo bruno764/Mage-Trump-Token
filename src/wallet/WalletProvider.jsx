@@ -10,10 +10,11 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter
 } from '@solana/wallet-adapter-wallets';
-import { clusterApiUrl } from '@solana/web3.js';
+
+// ✅ Endpoint privado de alta disponibilidade para evitar erros de blockhash
+const endpoint = 'https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/';
 
 export const WalletProvider = ({ children }) => {
-  const endpoint = useMemo(() => clusterApiUrl('mainnet-beta'), []);
   const wallets = useMemo(() => [
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter()
@@ -30,5 +31,5 @@ export const WalletProvider = ({ children }) => {
   );
 };
 
-// ✅ Exportação default para uso no App.jsx
+// ✅ Exportação default para uso em App.jsx
 export default WalletProvider;

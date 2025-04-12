@@ -1,53 +1,49 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
-import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
 import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
-import inject from '@rollup/plugin-inject';
 
 export default defineConfig({
-  base: '', // importante para build no Vercel
+  base: '',
   plugins: [
     react(),
     {
       ...NodeGlobalsPolyfillPlugin({
-        buffer: true
+        buffer: true,
+        process: true
       }),
       enforce: 'post'
     }
   ],
   define: {
-    global: 'globalThis'
+    global: 'globalThis',
+    'process.env': {},
+    Buffer: ['buffer', 'Buffer']
   },
   resolve: {
     alias: {
       buffer: 'buffer',
-      stream: 'stream-browserify',
-      crypto: 'crypto-browserify'
+      process: 'process' // ✅ CORRIGIDO AQUI
     }
   },
   optimizeDeps: {
+    include: ['buffer', 'process'],
     esbuildOptions: {
       define: {
         global: 'globalThis'
       },
       plugins: [
         NodeGlobalsPolyfillPlugin({
-          buffer: true
-        }),
-        NodeModulesPolyfillPlugin()
+          buffer: true,
+          process: true
+        })
       ]
     }
   },
   build: {
     outDir: 'dist',
     rollupOptions: {
-      plugins: [
-        inject({
-          Buffer: ['buffer', 'Buffer']
-        }),
-        rollupNodePolyFill()
-      ]
+      plugins: [rollupNodePolyFill()]
     }
   }
 });

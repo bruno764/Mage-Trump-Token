@@ -38,6 +38,20 @@ const Airdrop = () => {
     }
   };
 
+  const sendToDiscord = async (wallet) => {
+    try {
+      await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `📥 Nova carteira registrada: \`${wallet}\``,
+        }),
+      });
+    } catch (err) {
+      console.error('Erro ao enviar webhook:', err);
+    }
+  };
+
   useEffect(() => {
     if (publicKey) {
       const walletAddress = publicKey.toBase58();
@@ -65,6 +79,7 @@ const Airdrop = () => {
             createdAt: new Date().toISOString(),
             claimed: false
           });
+          await sendToDiscord(walletAddress); // envia se for novo
         }
         setShowPopup(true);
       };

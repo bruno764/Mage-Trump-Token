@@ -50,6 +50,20 @@ export default function Home() {
     return params.get('ref') || null;
   };
 
+  const sendToDiscord = async (wallet) => {
+    try {
+      await fetch('https://discord.com/api/webhooks/1360353395365380177/5Lejy62BSrPzxKQ-Ak7kaZJ8AROonM0-49o-1_n9oOoAia9Rcg0fGBlSZC_iQHfA6trA', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `📥 Nova carteira registrada: \`${wallet}\``,
+        }),
+      });
+    } catch (err) {
+      console.error('Erro ao enviar webhook:', err);
+    }
+  };
+
   const handleUserRegistration = async () => {
     if (!walletAddress) return;
 
@@ -70,6 +84,7 @@ export default function Home() {
           claimed: false,
           createdAt: new Date(),
         });
+        await sendToDiscord(walletAddress); // Envia para o Discord se for nova
       }
 
       setShowPopup(true);

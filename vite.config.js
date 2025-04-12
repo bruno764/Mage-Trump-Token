@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
+import inject from '@rollup/plugin-inject';
 
 export default defineConfig({
   base: '',
@@ -17,13 +18,12 @@ export default defineConfig({
   ],
   define: {
     global: 'globalThis',
-    'process.env': {},
-    Buffer: ['buffer', 'Buffer']
+    'process.env': {}
   },
   resolve: {
     alias: {
       buffer: 'buffer',
-      process: 'process' // ✅ CORRIGIDO AQUI
+      process: 'process'
     }
   },
   optimizeDeps: {
@@ -43,7 +43,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
-      plugins: [rollupNodePolyFill()]
+      plugins: [
+        rollupNodePolyFill(),
+        inject({
+          Buffer: ['buffer', 'Buffer']
+        })
+      ]
     }
   }
 });

@@ -20,13 +20,7 @@ export default function Referrals() {
       try {
         const q = query(collection(db, 'users'), where('referral', '==', walletAddress));
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => {
-          const d = doc.data();
-          return {
-            wallet: d.wallet,
-            createdAt: d.createdAt?.toDate?.() || null,
-          };
-        });
+        const data = querySnapshot.docs.map(doc => doc.data());
         setReferrals(data);
       } catch (error) {
         console.error('Error fetching referrals:', error);
@@ -38,11 +32,20 @@ export default function Referrals() {
     fetchReferrals();
   }, [walletAddress]);
 
+  const formatDate = (date) => {
+    try {
+      if (!date) return 'Invalid Date';
+      const parsedDate = typeof date === 'string'
+        ? new Date(date)
+        : date.toDate?.() || new Date(date);
+      return parsedDate.toLocaleString();
+    } catch {
+      return 'Invalid Date';
+    }
+  };
+
   const exportToCSV = () => {
-    const csvRows = [
-      ['Wallet', 'Created At'],
-      ...referrals.map(r => [r.wallet, r.createdAt?.toLocaleString() || 'N/A'])
-    ];
+    const csvRows = [['Wallet', 'Created At'], ...referrals.map(r => [r.wallet, formatDate(r.createdAt)])];
     const csvContent = csvRows.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -92,7 +95,7 @@ export default function Referrals() {
                   {referrals.map((ref, index) => (
                     <tr key={index}>
                       <td className="py-1 break-all">{ref.wallet}</td>
-                      <td className="py-1">{ref.createdAt?.toLocaleString() || 'N/A'}</td>
+                      <td className="py-1">{formatDate(ref.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -8,9 +8,10 @@ export default function Admin() {
   const [users, setUsers] = useState([]);
   const [totalSol, setTotalSol] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const { publicKey, disconnect } = useWallet();
+  const { publicKey, connected, disconnect } = useWallet();
   const walletAddress = publicKey?.toBase58();
   const navigate = useNavigate();
+  const [toggleAllEnabled, setToggleAllEnabled] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
@@ -31,29 +32,31 @@ export default function Admin() {
     }
   }, [walletAddress, navigate]);
 
-  const toggleClaim = async (userId, currentState) => {
+  const toggleAllClaims = async () => {
     try {
-      await updateDoc(doc(db, 'users', userId), { canClaim: !currentState });
-      setUsers(prev =>
-        prev.map(user =>
-          user.id === userId ? { ...user, canClaim: !currentState } : user
-        )
+      const batch = await getDocs(collection(db, 'users'));
+      const newStatus = toggleAllEnabled;
+      const updates = batch.docs.map(docSnap =>
+        updateDoc(doc(db, 'users', docSnap.id), { canClaim: newStatus })
       );
+      await Promise.all(updates);
+      setUsers(prev =>
+        prev.map(user => ({ ...user, canClaim: newStatus }))
+      );
+      setToggleAllEnabled(!toggleAllEnabled);
     } catch (err) {
-      console.error('Error toggling claim:', err);
+      console.error('Error toggling claims:', err);
     }
   };
 
-  const enableAllClaims = async () => {
+  const enableClaim = async (userId) => {
     try {
-      const batch = await getDocs(collection(db, 'users'));
-      const updates = batch.docs.map(docSnap =>
-        updateDoc(doc(db, 'users', docSnap.id), { canClaim: true })
+      await updateDoc(doc(db, 'users', userId), { canClaim: true });
+      setUsers(prev =>
+        prev.map(user => (user.id === userId ? { ...user, canClaim: true } : user))
       );
-      await Promise.all(updates);
-      setUsers(prev => prev.map(user => ({ ...user, canClaim: true })));
     } catch (err) {
-      console.error('Error enabling all claims:', err);
+      console.error('Error enabling claim:', err);
     }
   };
 
@@ -84,10 +87,10 @@ export default function Admin() {
           </div>
         </div>
         <button
-          onClick={enableAllClaims}
-          className="ml-4 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded h-max"
+          onClick={toggleAllClaims}
+          className={`ml-4 ${toggleAllEnabled ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-4 py-2 rounded h-max`}
         >
-          Enable Claim for All
+          {toggleAllEnabled ? 'Enable Claim for All' : 'Disable Claim for All'}
         </button>
       </div>
 
@@ -115,14 +118,14 @@ export default function Admin() {
                 <td className="p-2">{user.canClaim ? '✅' : '❌'}</td>
                 <td className="p-2">{user.createdAt?.toDate?.().toLocaleString() || '-'}</td>
                 <td className="p-2">
-                  <button
-                    onClick={() => toggleClaim(user.id, user.canClaim)}
-                    className={`${
-                      user.canClaim ? 'bg-gray-600 hover:bg-gray-700' : 'bg-yellow-500 hover:bg-yellow-600'
-                    } text-white px-3 py-1 rounded text-xs`}
-                  >
-                    {user.canClaim ? 'Disable Claim' : 'Enable Claim'}
-                  </button>
+                  {!user.canClaim && (
+                    <button
+                      onClick={() => enableClaim(user.id)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
+                    >
+                      Enable Claim
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

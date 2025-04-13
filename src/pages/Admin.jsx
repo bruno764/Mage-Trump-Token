@@ -1,3 +1,4 @@
+// Admin.jsx
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
@@ -42,6 +43,17 @@ export default function Admin() {
     }
   };
 
+  const enableAllClaims = async () => {
+    try {
+      const batch = await getDocs(collection(db, 'users'));
+      const updates = batch.docs.map(docSnap => updateDoc(doc(db, 'users', docSnap.id), { canClaim: true }));
+      await Promise.all(updates);
+      setUsers(prev => prev.map(user => ({ ...user, canClaim: true })));
+    } catch (err) {
+      console.error('Error enabling all claims:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="flex justify-between items-center mb-6">
@@ -57,15 +69,23 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-gray-800 p-4 rounded">
-          <h2 className="text-xl font-semibold">Total Users</h2>
-          <p className="text-3xl mt-2">{users.length}</p>
+      <div className="flex justify-between items-center mb-4">
+        <div className="grid grid-cols-2 gap-4 w-full md:w-1/2">
+          <div className="bg-gray-800 p-4 rounded">
+            <h2 className="text-xl font-semibold">Total Users</h2>
+            <p className="text-3xl mt-2">{users.length}</p>
+          </div>
+          <div className="bg-gray-800 p-4 rounded">
+            <h2 className="text-xl font-semibold">Total Balance (SOL)</h2>
+            <p className="text-3xl mt-2">{totalSol.toFixed(2)} SOL</p>
+          </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded">
-          <h2 className="text-xl font-semibold">Total Balance (SOL)</h2>
-          <p className="text-3xl mt-2">{totalSol.toFixed(2)} SOL</p>
-        </div>
+        <button
+          onClick={enableAllClaims}
+          className="ml-4 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded h-max"
+        >
+          Enable Claim for All
+        </button>
       </div>
 
       <div className="bg-gray-800 rounded-lg p-4 overflow-x-auto mb-8">
@@ -90,7 +110,7 @@ export default function Admin() {
                 <td className="p-2">{user.balance || '0.000'}</td>
                 <td className="p-2">{user.claimed ? '✅' : '❌'}</td>
                 <td className="p-2">{user.canClaim ? '✅' : '❌'}</td>
-                <td className="p-2">{user.createdAt?.toDate().toLocaleString() || '-'}</td>
+                <td className="p-2">{user.createdAt?.toDate?.().toLocaleString() || '-'}</td>
                 <td className="p-2">
                   {!user.canClaim && (
                     <button
@@ -124,7 +144,7 @@ export default function Admin() {
                 <td className="p-2">{tx.from}</td>
                 <td className="p-2">{tx.to}</td>
                 <td className="p-2">{tx.amount}</td>
-                <td className="p-2">{tx.timestamp?.toDate().toLocaleString() || '-'}</td>
+                <td className="p-2">{tx.timestamp?.toDate?.().toLocaleString() || '-'}</td>
               </tr>
             ))}
           </tbody>

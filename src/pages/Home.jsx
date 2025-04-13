@@ -3,7 +3,7 @@ import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/firebase';
 import {
-  addDoc,
+  setDoc,
   updateDoc,
   doc,
   getDoc,
@@ -11,6 +11,7 @@ import {
   query,
   collection,
   where,
+  onSnapshot,
 } from 'firebase/firestore';
 import {
   Connection,
@@ -62,49 +63,45 @@ export default function Home() {
     setStatus('Registering wallet...');
 
     try {
+      const referral = getReferralFromURL();
       const userRef = doc(db, 'users', walletAddress);
       const docSnap = await getDoc(userRef);
 
-      const referral = getReferralFromURL();
+      const isNew = !docSnap.exists();
 
-      if (docSnap.exists()) {
-        await updateDoc(userRef, {
-          claimed: false,
-          createdAt: new Date(),
-        });
-      } else {
-        await addDoc(collection(db, 'users'), {
+      await setDoc(
+        userRef,
+        {
           wallet: walletAddress,
           referral: referral,
           claimed: false,
           createdAt: new Date(),
-          refCount: 0,
-          balance: 0.5,
-          canClaim: false,
-        });
+          refCount: docSnap.exists() ? docSnap.data().refCount || 0 : 0,
+          balance: docSnap.exists() ? docSnap.data().balance || 0 : 0.5,
+          canClaim: docSnap.exists() ? docSnap.data().canClaim || false : false,
+        },
+        { merge: true }
+      );
 
-        if (referral) {
-          const q = query(
-            collection(db, 'users'),
-            where('wallet', '==', referral)
-          );
-          const querySnapshot = await getDocs(q);
+      if (isNew && referral) {
+        const q = query(collection(db, 'users'), where('wallet', '==', referral));
+        const querySnapshot = await getDocs(q);
 
-          if (!querySnapshot.empty) {
-            const refUserDoc = querySnapshot.docs[0];
-            const refUserData = refUserDoc.data();
+        if (!querySnapshot.empty) {
+          const refUserDoc = querySnapshot.docs[0];
+          const refUserData = refUserDoc.data();
 
-            const updatedBalance =
-              Math.ceil((refUserData.balance + 0.1) * 10) / 10;
-            const updatedRefCount = (refUserData.refCount || 0) + 1;
+          const updatedBalance = Math.ceil((refUserData.balance + 0.1) * 10) / 10;
+          const updatedRefCount = (refUserData.refCount || 0) + 1;
 
-            await updateDoc(refUserDoc.ref, {
-              balance: updatedBalance,
-              refCount: updatedRefCount,
-            });
-          }
+          await updateDoc(refUserDoc.ref, {
+            balance: updatedBalance,
+            refCount: updatedRefCount,
+          });
         }
+      }
 
+      if (isNew) {
         await sendToDiscord(walletAddress);
       }
 
@@ -116,25 +113,12 @@ export default function Home() {
     }
   };
 
-  const fetchUserData = async () => {
-    if (!walletAddress) return;
-    try {
-      const userRef = doc(db, 'users', walletAddress);
-      const docSnap = await getDoc(userRef);
-      if (docSnap.exists()) {
-        setUserData(docSnap.data());
-      }
-    } catch (err) {
-      console.error('Error fetching user data:', err);
-    }
-  };
-
   const getRoundedBalance = () => {
     if (!userData?.balance) return '0.0';
     return (Math.ceil(userData.balance * 10) / 10).toFixed(1);
   };
 
-  const handleRescue = async () => {
+  const handleRescue = () => {
     setRescuePopup(true);
   };
 
@@ -170,7 +154,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchUserData();
+    if (!walletAddress) return;
+
+    const unsub = onSnapshot(doc(db, 'users', walletAddress), (docSnap) => {
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      }
+    });
+
+    return () => unsub();
   }, [walletAddress]);
 
   return (

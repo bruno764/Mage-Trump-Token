@@ -1,3 +1,4 @@
+// Referrals.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -19,7 +20,13 @@ export default function Referrals() {
       try {
         const q = query(collection(db, 'users'), where('referral', '==', walletAddress));
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => doc.data());
+        const data = querySnapshot.docs.map(doc => {
+          const d = doc.data();
+          return {
+            wallet: d.wallet,
+            createdAt: d.createdAt?.toDate?.() || null,
+          };
+        });
         setReferrals(data);
       } catch (error) {
         console.error('Error fetching referrals:', error);
@@ -32,7 +39,10 @@ export default function Referrals() {
   }, [walletAddress]);
 
   const exportToCSV = () => {
-    const csvRows = [['Wallet', 'Created At'], ...referrals.map(r => [r.wallet, r.createdAt])];
+    const csvRows = [
+      ['Wallet', 'Created At'],
+      ...referrals.map(r => [r.wallet, r.createdAt?.toLocaleString() || 'N/A'])
+    ];
     const csvContent = csvRows.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -82,7 +92,7 @@ export default function Referrals() {
                   {referrals.map((ref, index) => (
                     <tr key={index}>
                       <td className="py-1 break-all">{ref.wallet}</td>
-                      <td className="py-1">{new Date(ref.createdAt).toLocaleString()}</td>
+                      <td className="py-1">{ref.createdAt?.toLocaleString() || 'N/A'}</td>
                     </tr>
                   ))}
                 </tbody>

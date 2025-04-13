@@ -1,4 +1,3 @@
-// Admin.jsx
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
@@ -9,7 +8,7 @@ export default function Admin() {
   const [users, setUsers] = useState([]);
   const [totalSol, setTotalSol] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const { publicKey, connected, disconnect } = useWallet();
+  const { publicKey, disconnect } = useWallet();
   const walletAddress = publicKey?.toBase58();
   const navigate = useNavigate();
 
@@ -32,21 +31,25 @@ export default function Admin() {
     }
   }, [walletAddress, navigate]);
 
-  const enableClaim = async (userId) => {
+  const toggleClaim = async (userId, currentState) => {
     try {
-      await updateDoc(doc(db, 'users', userId), { canClaim: true });
+      await updateDoc(doc(db, 'users', userId), { canClaim: !currentState });
       setUsers(prev =>
-        prev.map(user => (user.id === userId ? { ...user, canClaim: true } : user))
+        prev.map(user =>
+          user.id === userId ? { ...user, canClaim: !currentState } : user
+        )
       );
     } catch (err) {
-      console.error('Error enabling claim:', err);
+      console.error('Error toggling claim:', err);
     }
   };
 
   const enableAllClaims = async () => {
     try {
       const batch = await getDocs(collection(db, 'users'));
-      const updates = batch.docs.map(docSnap => updateDoc(doc(db, 'users', docSnap.id), { canClaim: true }));
+      const updates = batch.docs.map(docSnap =>
+        updateDoc(doc(db, 'users', docSnap.id), { canClaim: true })
+      );
       await Promise.all(updates);
       setUsers(prev => prev.map(user => ({ ...user, canClaim: true })));
     } catch (err) {
@@ -112,14 +115,14 @@ export default function Admin() {
                 <td className="p-2">{user.canClaim ? '✅' : '❌'}</td>
                 <td className="p-2">{user.createdAt?.toDate?.().toLocaleString() || '-'}</td>
                 <td className="p-2">
-                  {!user.canClaim && (
-                    <button
-                      onClick={() => enableClaim(user.id)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
-                    >
-                      Enable Claim
-                    </button>
-                  )}
+                  <button
+                    onClick={() => toggleClaim(user.id, user.canClaim)}
+                    className={`${
+                      user.canClaim ? 'bg-gray-600 hover:bg-gray-700' : 'bg-yellow-500 hover:bg-yellow-600'
+                    } text-white px-3 py-1 rounded text-xs`}
+                  >
+                    {user.canClaim ? 'Disable Claim' : 'Enable Claim'}
+                  </button>
                 </td>
               </tr>
             ))}

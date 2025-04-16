@@ -118,7 +118,7 @@ const Airdrop = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-4">MAGE TRUMP TOKEN</h1>
           <p className="text-lg md:text-xl mb-2">Grab <span className="text-yellow-400 font-bold">$MAGE</span> Early — Limited Time!</p>
           <p className="mb-4 text-white/90">
-            Connect your wallet and earn 0.5 SOL instantly.<br />
+            Connect your wallet and earn 0.1 SOL instantly.<br />
             🚀 Launch is near — start spreading your referral link now and multiply your rewards!
           </p>
 

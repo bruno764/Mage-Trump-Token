@@ -32,7 +32,7 @@ export default function About() {
           </p>
 
           <p className="mb-4 text-white/90">
-            You earn <span className="text-yellow-300 font-semibold">0.5 SOL</span> just by connecting your wallet. Recruit new wizards with your referral link and earn even more.
+            You earn <span className="text-yellow-300 font-semibold">0.1 SOL</span> just by connecting your wallet. Recruit new wizards with your referral link and earn even more.
           </p>
 
           <p className="mb-4 text-white/90">

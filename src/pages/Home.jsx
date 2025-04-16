@@ -157,7 +157,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">MAGE TRUMP TOKEN</h1>
           <h2 className="text-2xl font-bold text-white mb-2">Claim Free SOL and Join the Movement!</h2>
           <p className="text-sm text-gray-200 max-w-sm mb-6">
-            🔥 Get 0.5 SOL instantly just for connecting your wallet.<br />
+            🔥 Get 0.1 SOL instantly just for connecting your wallet.<br />
             🎯 Invite your friends and boost your earnings!<br />
             🧙‍♂️ The more you share, the more power you gain.
           </p>

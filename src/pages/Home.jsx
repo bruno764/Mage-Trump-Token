@@ -10,6 +10,7 @@ import {
 } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import TelegramPromo from '../components/TelegramPromo';
 
 export default function Home() {
   const { publicKey, connected, sendTransaction } = useWallet();
@@ -175,6 +176,10 @@ export default function Home() {
           {error && <p className="mt-4 text-red-500">{error}</p>}
         </div>
       </main>
+
+      {/* Promoção do bot Telegram */}
+      <TelegramPromo />
+
       {rescuePopup && (
         <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">

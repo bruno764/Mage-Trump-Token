@@ -4,6 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import trumpImage from '../assets/front.png';
+import TelegramPromo from '../components/TelegramPromo';
 
 export default function Referrals() {
   const { publicKey, connected } = useWallet();
@@ -112,6 +113,9 @@ export default function Referrals() {
           )}
         </div>
       </main>
+
+      {/* Promoção do bot Telegram */}
+      <TelegramPromo />
     </div>
   );
 }

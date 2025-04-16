@@ -3,6 +3,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link } from 'react-router-dom';
 import trumpImage from '../assets/front.png';
+import TelegramPromo from '../components/TelegramPromo';
 
 export default function About() {
   const [totalWallets, setTotalWallets] = useState(0);
@@ -53,6 +54,9 @@ export default function About() {
           <p className="text-sm mt-6 text-white/60">Updated in real time from Firestore 🔥</p>
         </div>
       </main>
+
+      {/* Promoção do bot Telegram */}
+      <TelegramPromo />
     </div>
   );
 }

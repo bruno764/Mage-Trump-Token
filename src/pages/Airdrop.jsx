@@ -126,7 +126,7 @@ const Airdrop = () => {
             disabled
             className="bg-gray-600 cursor-not-allowed text-white font-semibold px-5 py-2 rounded-lg opacity-70"
           >
-            Claim (available April 27)
+            Claim (available April 20)
           </button>
 
           {connected && (

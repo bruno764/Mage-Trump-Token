@@ -1,3 +1,4 @@
+// ... [imports permanecem os mesmos]
 import React, { useEffect, useState } from 'react';
 import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
@@ -143,6 +144,11 @@ export default function Home() {
         </div>
       </header>
 
+      {/* 🚀 Banner de lançamento */}
+      <div className="bg-yellow-400 text-black text-center font-bold py-2 px-4 shadow-lg">
+        🚀 Official Launch: <span className="underline">April 20th</span> — Claim available starting launch day!
+      </div>
+
       <main className="flex flex-col md:flex-row items-center justify-center flex-grow px-4 text-center md:text-left gap-10">
         <div className="w-full md:w-1/2 flex justify-center">
           <img src={trumpImage} alt="Trump Mage" className="w-64 md:w-[320px] lg:w-[380px]" />
@@ -177,7 +183,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Promoção do bot Telegram */}
       <TelegramPromo />
 
       {rescuePopup && (

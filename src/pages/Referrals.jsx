@@ -1,4 +1,3 @@
-// ...mesmos imports
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -11,9 +10,10 @@ export default function Referrals() {
   const { publicKey, connected } = useWallet();
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   const walletAddress = publicKey?.toBase58();
-  const referralLink = walletAddress ? `https://seusite.com/?ref=${walletAddress}` : '';
+  const referralLink = walletAddress ? `https://magetoken.com.br/?ref=${walletAddress}` : '';
 
   useEffect(() => {
     const fetchReferrals = async () => {
@@ -58,6 +58,16 @@ export default function Referrals() {
     URL.revokeObjectURL(url);
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy referral link:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a369d] text-white flex flex-col">
       <header className="w-full flex flex-wrap justify-between items-center px-6 py-6">
@@ -80,11 +90,19 @@ export default function Referrals() {
         <div className="w-full lg:w-1/2 max-w-xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center md:text-left">Your Mage Recruits</h1>
 
-          {/* 🎯 Link de referência */}
+          {/* 🎯 Link de referência + botão copiar */}
           {walletAddress && (
             <div className="mb-6 p-4 bg-yellow-300 text-black rounded shadow text-sm">
               <strong>🎯 Your referral link:</strong><br />
-              <code className="break-all">{referralLink}</code>
+              <div className="flex flex-wrap gap-2 items-center mt-1">
+                <code className="break-all">{referralLink}</code>
+                <button
+                  onClick={handleCopy}
+                  className="bg-black text-yellow-300 font-semibold px-3 py-1 rounded hover:opacity-80"
+                >
+                  {copied ? 'Copied!' : '📋 Copy'}
+                </button>
+              </div>
             </div>
           )}
 

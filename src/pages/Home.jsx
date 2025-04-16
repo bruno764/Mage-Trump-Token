@@ -1,3 +1,4 @@
+// imports iniciais iguais
 import React, { useEffect, useState } from 'react';
 import trumpImage from '../assets/front.png';
 import { Link } from 'react-router-dom';
@@ -145,9 +146,9 @@ export default function Home() {
 
       <main className="flex flex-col md:flex-row items-center justify-center flex-grow px-4 text-center md:text-left gap-10">
         <div className="w-full md:w-1/2 flex justify-center">
-          <img src={trumpImage} alt="Trump Mage" className="w-64 md:w-[320px] lg:w-[380px]" />
+          <img src={trumpImage} alt="Trump Mage" className="w-64 md:w-[320px] lg:w-[380px] animate-bounce" />
         </div>
-        <div className="w-full md:w-1/2 flex flex-col justify-center items-center md:items-start mt-6 md:mt-0">
+        <div className="w-full md:w-1/2 flex flex-col justify-center items-center md:items-start mt-6 md:mt-0 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">MAGE TRUMP TOKEN</h1>
           <h2 className="text-2xl font-bold text-white mb-2">Claim Free SOL and Join the Movement!</h2>
           <p className="text-sm text-gray-200 max-w-sm mb-6">
@@ -155,20 +156,20 @@ export default function Home() {
             🎯 Invite your friends and boost your earnings!<br />
             🧙‍♂️ The more you share, the more power you gain.
           </p>
-          <p className="text-sm mb-2 text-green-300">
+          <p className="text-sm mb-2 text-green-300 animate-pulse">
             Your current earnings: {getRoundedBalance()} SOL
           </p>
           <button
             onClick={handleUserRegistration}
             disabled={!connected}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded disabled:opacity-40"
+            className="bg-green-600 hover:bg-green-700 hover:animate-pulse text-white font-semibold py-2 px-6 rounded disabled:opacity-40 transition"
           >
             Register
           </button>
           <button
             onClick={handleRescue}
             disabled={!userData?.canClaim}
-            className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded disabled:opacity-40"
+            className="mt-4 bg-yellow-500 hover:bg-yellow-600 hover:animate-pulse text-white font-semibold py-2 px-6 rounded disabled:opacity-40 transition"
           >
             Claim Balance
           </button>
@@ -177,7 +178,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Promoção do bot Telegram */}
       <TelegramPromo />
 
       {rescuePopup && (
